@@ -1,4 +1,5 @@
-/ src/server.ts
+// src/server.ts
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -14,55 +15,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// middleware
 app.use(cors());
 app.use(helmet());
-app.use(morgan('dev'));
 app.use(express.json());
+app.use(morgan('dev'));
 
-// === logs dir (ต่อยอดจาก Lab 1.2) ===
-const logsDir = path.join(__dirname, '../logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-}
-
-// demo endpoint เดิมจาก Lab 1.2
-app.get('/api/demo', (req, res) => {
-  const logMessage = `Request at ${new Date().toISOString()}: ${req.ip}\n`;
-  fs.appendFileSync(path.join(logsDir, 'access.log'), logMessage);
-
-  res.json({
-    git: {
-      title: 'Advanced Git Workflow',
-      detail:
-        'ใช้ branch protection บน GitHub, code review ใน PR, และ squash merge เพื่อ history สะอาด',
-    },
-    docker: {
-      title: 'Advanced Docker',
-      detail:
-        'ใช้ multi-stage build, healthcheck ใน Dockerfile, และ orchestration ด้วย Compose/Swarm',
-    },
-  });
-});
-
-// health check root
-app.get('/', (_req, res) => {
-  res.json({
-    message: 'API พร้อมใช้งาน (Supabase + Prisma + Quasar Frontend)',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// Task API (Lab 2.1)
+// routes
 app.use('/api/tasks', taskRoutes);
 
-// ✅ fallback 404 สำหรับทุก route ที่ไม่ match
-app.use((req, res) => {
-  res.status(404).json({
-    message: 'ไม่พบเส้นทาง',
-    path: req.originalUrl,
-  });
+// test route
+app.get('/', (req, res) => {
+  res.send('API is running...');
 });
 
+// start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
